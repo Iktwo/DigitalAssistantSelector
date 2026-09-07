@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Consumed by DasVoiceInteractionService via the manifest meta-data.
+
+    Host apps that want the system settings entry to deep-link into their own
+    settings screen can override this resource (same file name) in their app
+    module and add, for example:
+
+        android:settingsActivity="com.example.myapp.MainActivity"
+-->
+<voice-interaction-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:sessionService="com.iktwo.das.DasAssistSessionService"
+    android:recognitionService="com.iktwo.das.DasRecognitionService"
+    android:supportsAssist="true"
+    android:supportsLaunchVoiceAssistFromKeyguard="true"
+    android:supportsLocalInteraction="true" />
