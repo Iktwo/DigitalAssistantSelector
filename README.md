@@ -38,10 +38,7 @@ send the user to the relevant settings screen.
 
 ```kotlin
 implementation("com.iktwo:das:0.1.0")
-```
-
-(while unpublished, install it locally with `./gradlew publishToMavenLocal`
-and add `mavenLocal()` to the consumer's repositories)### 2. Configure DAS in your `Application`
+```### 2. Configure DAS in your `Application`
 
 ```kotlin
 class MyApp : Application() {
