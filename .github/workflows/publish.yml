@@ -16,8 +16,8 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 21
-      - name: Publish DAS to MavenCentral
-        run: ./gradlew :das:publishToMavenCentral --no-configuration-cache
+      - name: Publish das-core and das to MavenCentral
+        run: ./gradlew publishToMavenCentral --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}

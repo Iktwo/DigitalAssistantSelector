@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="das_default_title">Asistente</string>
+    <string name="das_default_action">Usar texto</string>
+    <string name="das_close">Cerrar</string>
+    <string name="das_select_all">Seleccionar todo</string>
+    <string name="das_deselect_all">Deseleccionar todo</string>
+    <string name="das_analyzing">Analizando la pantalla…</string>
+    <string name="das_no_text">No se encontró texto en la pantalla.</string>
+    <string name="das_tap_hint">Toca el texto resaltado para seleccionarlo.</string>
+    <string name="das_screen_text_unavailable">El texto de la pantalla no está disponible. Activa \"Usar texto de la pantalla\" en Ajustes › Aplicaciones › Aplicaciones predeterminadas › Asistente digital.</string>
+</resources>

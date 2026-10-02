@@ -5,12 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.iktwo.das"
+    namespace = "com.iktwo.das.core"
     compileSdk = 37
 
     defaultConfig {
         minSdk = 26
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
@@ -24,10 +23,14 @@ android {
 }
 
 dependencies {
-    api(project(":das-core"))
+    api(platform(libs.androidx.compose.bom))
+    api(libs.androidx.compose.ui)
+    api(libs.androidx.compose.ui.graphics)
+    api(libs.androidx.compose.material3)
+    api(libs.androidx.lifecycle.runtime.ktx)
+    api(libs.androidx.savedstate.ktx)
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
 }
 
 mavenPublishing {

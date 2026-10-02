@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="das_default_title">Assistant</string>
+    <string name="das_default_action">Use Text</string>
+    <string name="das_close">Close</string>
+    <string name="das_select_all">Select All</string>
+    <string name="das_deselect_all">Deselect All</string>
+    <string name="das_analyzing">Analyzing screen…</string>
+    <string name="das_no_text">No screen text found.</string>
+    <string name="das_tap_hint">Tap highlighted text to select it.</string>
+    <string name="das_screen_text_unavailable">Screen text not available. Turn on \"Use text from screen\" in Settings › Apps › Default apps › Digital assistant app.</string>
+</resources>

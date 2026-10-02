@@ -32,13 +32,22 @@ It also provides `DasAssistant`, a small API to check whether the app is the
 configured assistant, request the assistant role with the system dialog, or
 send the user to the relevant settings screen.
 
+## Artifacts
+
+| Artifact | Use it when | Contents |
+|---|---|---|
+| `com.iktwo:das` | You want a ready-made assistant with no code of your own. | Everything below, plus the services and activity merged into your manifest. Depends on `das-core`. |
+| `com.iktwo:das-core` | Your app already has its own `VoiceInteractionService`. | `AssistExtractor`, `TextRegion`, `TextSelectionLayer`, `DasAssistOverlay`, `DasOverlayTheme`, `SessionLifecycleOwner` and `DasAssistant`. No manifest components. |
+
 ## Integration
 
 ### 1. Add the dependency
 
 ```kotlin
-implementation("com.iktwo:das:0.1.0")
-```### 2. Configure DAS in your `Application`
+implementation("com.iktwo:das:0.2.0")
+```
+
+### 2. Configure DAS in your `Application`
 
 ```kotlin
 class MyApp : Application() {
@@ -122,6 +131,63 @@ in your app module (same file name wins) and add the attribute:
     android:supportsLocalInteraction="true" />
 ```
 
+## Embedding in your own assistant (`das-core`)
+
+Depend on `com.iktwo:das-core` instead of `das`. Nothing merges into your
+manifest, so your own `VoiceInteractionService` stays the only assistant
+candidate.
+
+Extract the regions in your session's `onHandleAssist`, and show the overlay
+in its content view when the user asks for it:
+
+```kotlin
+val regions = structure?.let(AssistExtractor::extractTextRegions).orEmpty()
+
+DasAssistOverlay(
+    regions = regions,
+    isSearching = false,
+    error = null,
+    onClose = { /* hide the overlay */ },
+    onConfirm = { text -> /* use the selection */ },
+)
+```
+
+For your own controls, use `TextSelectionLayer` instead. It dims the screen,
+outlines the regions and reports taps, and you keep the selected indices:
+
+```kotlin
+var selected by remember(regions) { mutableStateOf(emptySet<Int>()) }
+
+TextSelectionLayer(
+    regions = regions,
+    selected = selected,
+    onToggle = { i -> selected = if (i in selected) selected - i else selected + i },
+    onTapOutside = onClose,
+)
+val text = regions.textOf(selected)
+```
+
+Region bounds are absolute screen coordinates, so host the overlay in a window
+that covers the whole screen (a `VoiceInteractionSession` window does).
+`SessionLifecycleOwner` gives the session's `ComposeView` the lifecycle and
+saved state owners that `VoiceInteractionSession` lacks.
+
+The overlay's strings are Android resources (`das_*`) in English, Spanish and
+French. Override them in your app to change or add translations.
+
+## Migrating from 0.1.0
+
+- `das` now depends on `das-core`. Apps that only used `AssistExtractor`,
+  `TextRegion` or `DasAssistant` can depend on `das-core` and delete any
+  `tools:node="remove"` entries for the DAS components.
+- `DasAssistOverlay` takes `onClose` and `onConfirm` before the optional
+  `theme`, `title` and `actionLabel`, and applies `theme.colorScheme` itself.
+- `DasConfig.title` and `DasConfig.actionLabel` are nullable. Null means the
+  localized default.
+- `material-icons-extended` is no longer an `api` dependency. Declare it
+  yourself if you use its icons.
+- When regions overlap, a tap selects the smallest one under the finger.
+
 ## Requirements
 
 - Android API 26+ (role request dialog requires API 29+)
@@ -130,8 +196,8 @@ in your app module (same file name wins) and add the attribute:
 ## Building
 
 ```bash
-./gradlew :das:assembleRelease       # build the AAR
-./gradlew :das:publishToMavenLocal   # install locally for testing
+./gradlew assembleRelease       # build both AARs
+./gradlew publishToMavenLocal   # install both locally for testing
 ```
 
 ## Publishing
@@ -150,3 +216,15 @@ time as environment variables from GitHub Actions secrets:
 
 To publish: create a GitHub release (the workflow triggers on `released` and
 `prereleased`) with the required secrets configured in the repo settings.
+
+### From a local machine
+
+```bash
+./gradlew publishToMavenCentral --no-configuration-cache
+```
+
+Builds, signs and uploads `das-core` and `das` at `VERSION_NAME` (in
+`gradle.properties`) to the Central Portal as one deployment. It does not
+release them. It reads the Central Portal token (`mavenCentralUsername` /
+`mavenCentralPassword`) and the signing key (`signing.*`) from
+`~/.gradle/gradle.properties`.

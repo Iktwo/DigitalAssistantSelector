@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="das_default_title">Assistant</string>
+    <string name="das_default_action">Utiliser le texte</string>
+    <string name="das_close">Fermer</string>
+    <string name="das_select_all">Tout sélectionner</string>
+    <string name="das_deselect_all">Tout désélectionner</string>
+    <string name="das_analyzing">Analyse de l’écran…</string>
+    <string name="das_no_text">Aucun texte trouvé à l’écran.</string>
+    <string name="das_tap_hint">Touche le texte en surbrillance pour le sélectionner.</string>
+    <string name="das_screen_text_unavailable">Le texte de l’écran n’est pas disponible. Active « Utiliser le texte affiché à l’écran » dans Paramètres › Applications › Applications par défaut › Assistant numérique.</string>
+</resources>

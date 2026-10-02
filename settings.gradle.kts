@@ -23,4 +23,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "digital-assistant-selector"
+include(":das-core")
 include(":das")

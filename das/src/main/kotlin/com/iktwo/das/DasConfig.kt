@@ -4,19 +4,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.ui.graphics.Color
-
-/**
- * Visual configuration for the assist selection overlay.
- */
-data class DasOverlayTheme(
-    val colorScheme: ColorScheme = darkColorScheme(),
-    val highlightColor: Color = Color(0xFF8FF7F7),
-    val selectedColor: Color = Color(0xFFFFCC00),
-    val scrimColor: Color = Color.Black.copy(alpha = 0.4f)
-)
 
 /**
  * Configuration for DAS. Provide an instance to [Das.init] from your
@@ -27,10 +14,13 @@ data class DasOverlayTheme(
  * (when [copyToClipboard] is true) and forwards it to the app's launcher
  * activity as an [Intent.ACTION_PROCESS_TEXT] intent, so an activity with a
  * PROCESS_TEXT intent filter receives it like any other shared text.
+ *
+ * [title] and [actionLabel] default to DAS's localized "Assistant" and
+ * "Use Text" when null.
  */
 data class DasConfig(
-    val title: String = "Assistant",
-    val actionLabel: String = "Use Text",
+    val title: String? = null,
+    val actionLabel: String? = null,
     val copyToClipboard: Boolean = true,
     val clipboardLabel: String = "DAS Copied Text",
     val theme: DasOverlayTheme = DasOverlayTheme(),
