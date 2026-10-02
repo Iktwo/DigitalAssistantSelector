@@ -1,188 +1,152 @@
-# DAS — DIGITAL ASSISTANT SELECTOR
-
-<p align="center">
-  <strong>A Modern Kotlin / Gradle Solution for DAS — Digital Assistant Selector — Built with High Reliability & Performance</strong>
-</p>
-
-<p align="center">
-  <em>"An Android library that turns any app into a **digital assistant with on-screen
-text selection**."</em>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Kotlin-Gradle-blue.svg?logo=kotlin&logoColor=white" alt="Kotlin / Gradle"/>
-  <img src="https://img.shields.io/badge/Version-1.0.0-orange.svg" alt="Version 1.0.0"/>
-  <img src="https://img.shields.io/badge/Layer-Backend%20%7C%20Core-brightgreen.svg" alt="Category"/>
-  <img src="https://img.shields.io/badge/Platforms-JVM%20%7C%20Cross--Platform" alt="Platforms"/>
-  <img src="https://img.shields.io/badge/Status-Active-brightgreen.svg" alt="Status"/>
-</p>
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Core Features & Capabilities](#core-features--capabilities)
-- [Architecture & Systems Design](#architecture--systems-design)
-- [Controls & Interface Reference](#controls--interface-reference)
-- [Project Structure & Code Map](#project-structure--code-map)
-- [Getting Started & Development](#getting-started--development)
-  - [Prerequisites](#prerequisites)
-  - [Running the Application](#running-the-application)
-  - [Running the Test Suites](#running-the-test-suites)
-  - [Building & Packaging](#building--packaging)
-- [Engineering Rules for Contributors](#engineering-rules-for-contributors)
-- [Credits & License](#credits--license)
-
----
-
-## Overview
+# DAS — Digital Assistant Selector
 
 An Android library that turns any app into a **digital assistant with on-screen
 text selection**. Once the host app is configured as the device's default
 assistant, DAS overlays the current screen with tappable bounding boxes around
 every detected text element, lets the user pick the text they want, and hands
 the selection back to the host app.
+
 The implementation was extracted from [Mockery](https://github.com/iktwo/Mockery)
 and litertlm, which both shipped near-identical copies of this mechanism.
 
-### Key Highlights
-- **Modern Architecture:** Strict separation of domain logic, state orchestration, and presentation layers.
-- **Multiplatform Ready:** Built from the ground up to support responsive desktop, mobile, and native execution targets.
-- **Deterministic & Resilient:** Designed with transaction-safe state changes, data validation, and fault-tolerant storage.
-- **Developer Ergonomics:** Streamlined test runners, comprehensive type safety, and clean asset pipelines.
+## What it does
 
----
+Adding the library to an app automatically merges the following into the app's
+manifest:
 
-## Core Features & Capabilities
+- `DasVoiceInteractionService` — a `VoiceInteractionService` declared with
+  `android:supportsAssist="true"`, which makes the system offer the app as a
+  digital assistant candidate.
+- `DasAssistSessionService` / `DasAssistSession` — the
+  `VoiceInteractionSession` that renders a Compose overlay on top of the
+  current screen: highlighted, tappable text regions, Select All / Deselect
+  All, a preview of the selection, and a confirmation action.
+- `DasRecognitionService` — a stub `RecognitionService`. Some OEMs (notably
+  Samsung) require it for the "Analyze on-screen text", "Analyze on-screen
+  images", and "Flash screen" assist options to appear in system settings.
+- `DasAssistActivity` — fallback activity handling `ACTION_ASSIST` /
+  `ACTION_VOICE_ASSIST` / `ACTION_SEARCH_LONG_PRESS` (forwards to the app's
+  launcher activity).
 
-| Feature / Subsystem | Capability | Operational Status |
-|---|---|---|
-| **Shared Domain Engine** | Pure Kotlin common logic shared 100% across all target platforms | Multiplatform Verified |
-| **Declarative UI** | Jetpack Compose / Compose Multiplatform reactive UI state management | Adaptive Layout |
-| **Asynchronous Flow** | Kotlin Coroutines and StateFlow for frictionless event propagation | Non-blocking |
-| **Modular Dependency Injection** | Scalable component wiring using Koin dependency injection | Production Ready |
+It also provides `DasAssistant`, a small API to check whether the app is the
+configured assistant, request the assistant role with the system dialog, or
+send the user to the relevant settings screen.
 
----
+## Integration
 
-## Architecture & Systems Design
+### 1. Add the dependency
 
-**DAS — Digital Assistant Selector** is organized around strict separation of concerns to guarantee long-term maintainability, deterministic state updates, and isolated testability:
+```kotlin
+implementation("com.iktwo:das:0.1.0")
+```### 2. Configure DAS in your `Application`
 
-```
- +---------------------------------------------------------------+ 
- |                      Presentation Layer                       | 
- |   - User Input & Gesture Dispatch                             | 
- |   - Reactive State Observation & Screen Layout                | 
- +-------------------------------+-------------------------------+ 
-                                 | (Actions / Events)             
-                                 v                                
- +---------------------------------------------------------------+ 
- |                   Domain & State Coordinator                  | 
- |   - Immutable State Transitions & Reducers                    | 
- |   - Transaction Validation & Pre-execution Guards             | 
- +-------------------------------+-------------------------------+ 
-                                 | (Storage / Network / IO)       
-                                 v                                
- +---------------------------------------------------------------+ 
- |                   Infrastructure & Services                   | 
- |   - Persistence, Network Clients, Platform Adapters           | 
- +---------------------------------------------------------------+ 
-```
-
-### Key Architectural Tenets
-1. **Single Source of Truth:** State flows downward through reactive observers; mutations are executed strictly via validated transactions.
-2. **Separation of Presentation and Logic:** Domain rules are decoupled from UI rendering trees, enabling comprehensive headless verification.
-3. **Resilient Persistence:** Saves, caches, and exports utilize atomic file swapping (`.tmp` write followed by atomic rename) to guard against mid-write power loss.
-
----
-
-## Controls & Interface Reference
-
-| Input / Interface | Action / Command | Description |
-|---|---|---|
-| `Primary Action` / `Enter` | Confirm / Execute | Triggers primary interactive action |
-| `Secondary Action` / `Space` | Alternate / Inspect | Inspects element or performs contextual action |
-| `Esc` / `Back` | Dismiss / Return | Backs out of modal dialogs or cancels current operation |
-| `Tab` / `Shift+Tab` | Navigation | Moves focus between interactive controls and form inputs |
-
----
-
-## Project Structure & Code Map
-
-```text
-digital_assistant_selector/
-├── LICENSE
-├── README.md          # Project documentation
-├── build.gradle.kts
-├── das/
-│   ├── build.gradle.kts
-│   ├── consumer-rules.pro
-│   └── src/
-├── gradle/
-│   ├── gradle-daemon-jvm.properties
-│   ├── libs.versions.toml     # Configuration
-│   └── wrapper/
-├── gradle.properties
-├── gradlew
-├── gradlew.bat
-├── local.properties
-└── settings.gradle.kts
+```kotlin
+class MyApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        Das.init(
+            DasConfig(
+                title = "My Assistant",
+                actionLabel = "Use Text",
+                copyToClipboard = true,
+                // Optional: handle the confirmed selection yourself.
+                // Default behavior: copy to clipboard (if enabled) and forward
+                // the text to the launcher activity as ACTION_PROCESS_TEXT.
+                onTextSelected = { context, text -> /* ... */ },
+                // Optional theming of the overlay.
+                theme = DasOverlayTheme(
+                    highlightColor = Color(0xFF8FF7F7),
+                    selectedColor = Color(0xFFFFCC00)
+                )
+            )
+        )
+    }
+}
 ```
 
----
+That is the whole setup — no manifest entries are needed, everything merges
+from the library.
 
-## Getting Started & Development
+### 3. Guide the user into enabling the assistant
 
-### Prerequisites
-- **JDK 17+ or JDK 21+** (Temurin or Azul recommended)
-- **Android Studio / IntelliJ IDEA** with Kotlin Multiplatform plugin
-- Xcode 15+ (for iOS target compilation on macOS)
+```kotlin
+if (!DasAssistant.isDefaultAssistant(context)) {
+    // Preferred: system role request dialog (API 29+)
+    val intent = DasAssistant.createRoleRequestIntent(context)
+    if (intent != null) {
+        startActivityForResult(intent, REQUEST_ASSISTANT_ROLE)
+    } else {
+        // Fallback: open the assistant settings screen
+        DasAssistant.openAssistantSettings(context)
+    }
+}
+```
 
-### Running the Application
+Available API on `DasAssistant`:
+
+| Function | Description |
+|---|---|
+| `isDefaultAssistant(context)` | True when the app is the current default assistant (RoleManager, with legacy `Settings.Secure` fallback). |
+| `canRequestRole(context)` | True when the role can be requested via the system dialog. |
+| `createRoleRequestIntent(context)` | Intent for `startActivityForResult`; `RESULT_OK` means the user accepted. |
+| `openAssistantSettings(context)` | Opens the system voice-input/assistant settings screen. |
+
+### Receiving the selection
+
+With the default configuration, DAS copies the selected text to the clipboard
+and launches the app's launcher activity with `ACTION_PROCESS_TEXT` +
+`EXTRA_PROCESS_TEXT` — the same channel used by the standard Android text
+selection menu, so most apps can reuse their existing handling:
+
+```kotlin
+if (intent.action == Intent.ACTION_PROCESS_TEXT) {
+    val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()
+}
+```
+
+Alternatively pass `onTextSelected` in `DasConfig` for full control.
+
+### Customizing `settingsActivity`
+
+The system settings entry for the assistant can deep-link into an app screen.
+To enable it, override the library resource `res/xml/das_voice_interaction_service.xml`
+in your app module (same file name wins) and add the attribute:
+
+```xml
+<voice-interaction-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:sessionService="com.iktwo.das.DasAssistSessionService"
+    android:recognitionService="com.iktwo.das.DasRecognitionService"
+    android:settingsActivity="com.example.myapp.MainActivity"
+    android:supportsAssist="true"
+    android:supportsLaunchVoiceAssistFromKeyguard="true"
+    android:supportsLocalInteraction="true" />
+```
+
+## Requirements
+
+- Android API 26+ (role request dialog requires API 29+)
+- Jetpack Compose (the overlay is Compose-based)
+
+## Building
+
 ```bash
-# Run Desktop application
-./gradlew run
-
-# Run backend server (if applicable)
-./gradlew :server:run
+./gradlew :das:assembleRelease       # build the AAR
+./gradlew :das:publishToMavenLocal   # install locally for testing
 ```
 
-### Running the Test Suites
-```bash
-# Run unit tests across modules
-./gradlew check
-```
+## Publishing
 
-### Building & Packaging
-```bash
-# Build release distributions
-./gradlew packageDistributionForCurrentOS
-```
+Publishing to Maven Central is handled by the
+[vanniktech Maven Publish plugin](https://github.com/vanniktech/gradle-maven-publish-plugin)
+via `.github/workflows/publish.yml`, which runs on GitHub releases.
 
----
+Credentials are **never stored in the repository** — they are injected at CI
+time as environment variables from GitHub Actions secrets:
 
-## Engineering Rules for Contributors
+| Secret | Purpose |
+|---|---|
+| `MAVEN_CENTRAL_USERNAME` / `MAVEN_CENTRAL_PASSWORD` | Sonatype Central Portal user token |
+| `SIGNING_KEY_ID` / `SIGNING_PASSWORD` / `GPG_KEY_CONTENTS` | In-memory GPG key used to sign publications |
 
-When contributing to **DAS — Digital Assistant Selector**, please adhere strictly to these core engineering standards:
-
-1. **Data-Oriented Separation:** Keep domain logic and simulation models strictly decoupled from UI rendering code.
-2. **Predictable State Transitions:** All mutations must flow through explicit commands or reducers. Avoid uncoordinated global state modifications.
-3. **Atomic Persistence:** Save files and serialized state must be written to temporary staging files (`.tmp`) and swapped via atomic filesystem renames.
-4. **Responsive & Accessible UI:** Maintain visible focus indicators, respect system safe-area insets, and ensure fluid resizing across resolutions.
-5. **Strict Type Safety:** Leverage full typing across signatures, schemas, and API contracts; never bypass compiler or linter checks.
-6. **Headless Verification:** Ensure core game and domain logic can execute headlessly without hardware display or audio devices.
-7. **Asset Optimization:** Store vector assets as clean, optimized SVGs and verify rasterization across standard density targets (1x, 2x, 3x).
-8. **Defensive Error Handling:** Catch invalid inputs and IO failures gracefully with clear, actionable diagnostic logging.
-9. **Preserve User Data:** Never overwrite or invalidate prior saved user data without automated, tested migration routines.
-10. **Clean Commits:** Write concise, atomic commit messages following conventional commits (`feat:`, `fix:`, `docs:`, `refactor:`).
-
----
-
-## Credits & License
-
-Developed with care by **Isaac SH** ([@Iktwo](https://github.com/Iktwo)). Built with Kotlin / Gradle.
-
-<p align="center">
-  <sub>Crafted for high performance, modular architecture, and enduring quality.</sub>
-</p>
+To publish: create a GitHub release (the workflow triggers on `released` and
+`prereleased`) with the required secrets configured in the repo settings.
